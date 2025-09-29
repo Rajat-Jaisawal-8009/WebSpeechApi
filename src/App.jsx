@@ -1,69 +1,73 @@
-import { useRef, useState } from 'react'
-import './App.css'
+import { useRef, useState } from "react";
+import "./App.css";
 
 function App() {
-const [text, setText] = useState("")
-const timeoutRef = useRef()
+  const [text, setText] = useState("");
+  const recognitionRef = useRef(null);
+  const silenceTimerRef = useRef(null);
 
-  const startSTTHandle = ()=>{
+  const startSTTHandle = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert("Your browser does not support SpeechRecognition!");
+      return;
+    }
 
+    // हर बार नया instance न बने, इसलिए useRef में रखो
+    if (!recognitionRef.current) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
 
-const recognition = new SpeechRecognition()
+      // जब result आए
+      recognition.onresult = (event) => {
+        const result = event.results[event.resultIndex]; // सिर्फ latest result लो
 
-recognition.continuous = true;
-recognition.interimResults = true;
-recognition.lang = "en-US"
+        if (result.isFinal) {
+          setText((prev) => prev + " " + result[0].transcript);
+        }
 
-const stopRecognition = ()=>{
-timeoutRef.current  =  setTimeout(()=>{
-  console.log("khatam")
-recognition.stop();
-},4000)}
-let silenceTimer;
-recognition.start()
+        // हर बार बोलने पर timer reset करो
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(() => {
+          console.log("⏳ Silence detect: User ने बोलना बंद कर दिया");
+          recognition.stop();
+        }, 4000);
+      };
 
+      recognition.onspeechstart = () => {
+        console.log("🎤 User बोल रहा है...");
+        clearTimeout(silenceTimerRef.current);
+      };
 
-recognition.onspeechstart = () => {
-   
-  console.log("User बोल रहा है...");
-    clearTimeout(timeoutRef.current)
-};
+      recognition.onspeechend = () => {
+        console.log("🛑 Speech end detect हुआ");
+      };
 
+      recognition.onend = () => {
+        console.log("Recognition बंद हो गया");
+      };
 
+      recognition.onerror = (e) => {
+        console.error("❌ Error:", e.error);
+      };
 
-recognition.onresult = (event)=>{
+      recognitionRef.current = recognition;
+    }
 
-  console.log(event.results)
-
-clearTimeout(silenceTimer);
-  silenceTimer = setTimeout(() => {
-    console.log("⏳ Silence detect: User ने बोलना बंद कर दिया (custom timeout)");
-    recognition.stop();
-      for(let i=0; i<event.results.length; i++){
-    const result = event.results[i][0].transcript;
-    if(event.results[i].isFinal){
-setText(pre=>pre +" "+ result)}
-}
-  }, 4000); 
-    
-
-
-
-
-
-}
-stopRecognition()
-  }
+    recognitionRef.current.start();
+    console.log("Mic चालू हो गया...");
+  };
 
   return (
     <>
-     
-     <button onClick={startSTTHandle}> Start Mic...</button>
-     <div>{text}</div>
+      <button onClick={startSTTHandle}>🎤 Start Mic</button>
+      <div style={{ marginTop: "20px" }}>{text}</div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
