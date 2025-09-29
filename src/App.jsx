@@ -11,30 +11,48 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 
 
 const recognition = new SpeechRecognition()
-console.log(recognition)
+
 recognition.continuous = true;
-recognition.interimResults = false;
+recognition.interimResults = true;
 recognition.lang = "en-US"
 
 const stopRecognition = ()=>{
 timeoutRef.current  =  setTimeout(()=>{
+  console.log("khatam")
 recognition.stop();
-},6000)}
-
+},4000)}
+let silenceTimer;
 recognition.start()
 
-let ind = 0
+
+recognition.onspeechstart = () => {
+   
+  console.log("User बोल रहा है...");
+    clearTimeout(timeoutRef.current)
+};
+
+
+
 recognition.onresult = (event)=>{
-  clearTimeout(timeoutRef.current)
+
   console.log(event.results)
-  for(let i=ind; i<event.results.length; i++){
+
+clearTimeout(silenceTimer);
+  silenceTimer = setTimeout(() => {
+    console.log("⏳ Silence detect: User ने बोलना बंद कर दिया (custom timeout)");
+    recognition.stop();
+      for(let i=0; i<event.results.length; i++){
     const result = event.results[i][0].transcript;
-if(event.results[i].isFinal){
-setText(pre=>pre +" "+ result)
+    if(event.results[i].isFinal){
+setText(pre=>pre +" "+ result)}
 }
-}
-ind += 1
-stopRecognition()
+  }, 4000); 
+    
+
+
+
+
+
 }
 stopRecognition()
   }
@@ -42,7 +60,7 @@ stopRecognition()
   return (
     <>
      
-     <button onClick={startSTTHandle}> Start Mic</button>
+     <button onClick={startSTTHandle}> Start Mic...</button>
      <div>{text}</div>
     </>
   )
