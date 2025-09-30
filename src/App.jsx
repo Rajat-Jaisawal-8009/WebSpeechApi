@@ -3,35 +3,14 @@ import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognitio
 
 function App() {
   const { transcript, listening } = useSpeechRecognition();
+  const [text, setText] = useState("")
   const [message, setMessage] = useState("");
   const silenceTimerRef = useRef(null);
 
-  useEffect(() => {
+  
     const recognition = SpeechRecognition.getRecognition();
 
-    if (recognition) {
-      // जब भी speech result आए → timer reset
-      recognition.onresult = (event) => {
-        let result = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          result += event.results[i][0].transcript;
-        }
-        console.log("🎤 User said:", result);
-        setMessage("User बोल रहा है...");
-
-        // reset silence timer
-        resetSilenceTimer();
-      };
-
-      // जब बोलना खत्म हो (speechend) detect हो
-      recognition.onspeechend = () => {
-        console.log("⏹ Speech ended, waiting for 5 sec silence...");
-        resetSilenceTimer();
-      };
-    }
-  }, []);
-
-  const resetSilenceTimer = () => {
+     const resetSilenceTimer = () => {
     clearTimeout(silenceTimerRef.current);
     silenceTimerRef.current = setTimeout(() => {
       console.log("❌ 5 sec silence detected → stopListening()");
@@ -40,8 +19,32 @@ function App() {
     }, 5000); // 5 seconds
   };
 
+    if (recognition) {
+      // जब भी speech result आए → timer reset
+          const originalOnResult = recognition.onresult;
+      recognition.onresult = (event) => {
+        if (typeof originalOnResult === "function") {
+        originalOnResult(event);
+            setMessage("User बोल रहा है...");
+
+        resetSilenceTimer();
+      }
+
+    
+      };
+
+      // जब बोलना खत्म हो (speechend) detect हो
+      recognition.onspeechend = () => {
+        console.log("⏹ Speech ended, waiting for 5 sec silence...");
+        resetSilenceTimer();
+      };
+    }
+
+
+ 
+
   const startListening = () => {
-    SpeechRecognition.startListening({ continuous: true, language: "en-IN" });
+    SpeechRecognition.startListening({ continuous: true,interimResults: true, language: "en-IN" });
     setMessage("Listening शुरू...");
     resetSilenceTimer();
   };
