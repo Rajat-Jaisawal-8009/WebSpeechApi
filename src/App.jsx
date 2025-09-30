@@ -8,7 +8,7 @@ function App() {
     resetTranscript,
     browserSupportsSpeechRecognition,
   } = useSpeechRecognition();
-
+ const recognition = SpeechRecognition.getRecognition();
   if (!browserSupportsSpeechRecognition) {
     return <span>⚠️ Browser Speech Recognition support नहीं करता।</span>;
   }
