@@ -1,72 +1,39 @@
-import { useRef, useState } from "react";
-import "./App.css";
+import React from "react";
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 
 function App() {
-  const [text, setText] = useState("");
-  const recognitionRef = useRef(null);
-  const silenceTimerRef = useRef(null);
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
 
-  const startSTTHandle = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!browserSupportsSpeechRecognition) {
+    return <span>⚠️ Browser Speech Recognition support नहीं करता।</span>;
+  }
 
-    if (!SpeechRecognition) {
-      alert("Your browser does not support SpeechRecognition!");
-      return;
-    }
-
-    // हर बार नया instance न बने, इसलिए useRef में रखो
-    if (!recognitionRef.current) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = "en-US";
-
-      // जब result आए
-      recognition.onresult = (event) => {
-        const result = event.results[event.resultIndex]; // सिर्फ latest result लो
-
-        if (result.isFinal) {
-          setText((prev) => prev + " " + result[0].transcript);
-        }
-
-        // हर बार बोलने पर timer reset करो
-        clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = setTimeout(() => {
-          console.log("⏳ Silence detect: User ने बोलना बंद कर दिया");
-          recognition.stop();
-        }, 4000);
-      };
-
-      recognition.onspeechstart = () => {
-        console.log("🎤 User बोल रहा है...");
-        clearTimeout(silenceTimerRef.current);
-      };
-
-      recognition.onspeechend = () => {
-        console.log("🛑 Speech end detect हुआ");
-      };
-
-      recognition.onend = () => {
-        console.log("Recognition बंद हो गया");
-      };
-
-      recognition.onerror = (e) => {
-        console.error("❌ Error:", e.error);
-      };
-
-      recognitionRef.current = recognition;
-    }
-
-    recognitionRef.current.start();
-    console.log("Mic चालू हो गया...");
-  };
+  const startListening = () =>
+    SpeechRecognition.startListening({
+      continuous: true,   // लगातार सुनता रहेगा
+      interimResults: true, // typing effect जैसा दिखेगा
+      language: "en-US",
+    });
 
   return (
-    <>
-      <button onClick={startSTTHandle}>🎤 Start Mic</button>
-      <div style={{ marginTop: "20px" }}>{text}</div>
-    </>
+    <div style={{ padding: "20px", textAlign: "center" }}>
+      <h2>🎤 React Speech Recognition Demo</h2>
+      <p><b>Status:</b> {listening ? "Listening..." : "Stopped"}</p>
+
+      <button onClick={startListening}>Start</button>
+      <button onClick={SpeechRecognition.stopListening}>Stop</button>
+      <button onClick={resetTranscript}>Reset</button>
+
+      <div style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px" }}>
+        <b>Transcript:</b>
+        <p>{transcript}</p>
+      </div>
+    </div>
   );
 }
 
