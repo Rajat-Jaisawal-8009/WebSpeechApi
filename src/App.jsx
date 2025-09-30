@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 
 function App() {
+  const silenceTimer = useRef()
   const {
     transcript,
     listening,
@@ -15,24 +16,15 @@ function App() {
 
 
   
- 
-
-  const startListening = () =>{
-   let silenceTimer;
 const resetSilenceTimer = () => {
-    if (silenceTimer) clearTimeout(silenceTimer);
-    silenceTimer = setTimeout(() => {
+    if (silenceTimer.current) clearTimeout(silenceTimer.current);
+    silenceTimer.current = setTimeout(() => {
    SpeechRecognition.stopListening();
    
     }, 4000);
   };
-    SpeechRecognition.startListening({
-      continuous: true,   // लगातार सुनता रहेगा
-      interimResults: true, // typing effect जैसा दिखेगा
-      language: "en-US",
-    });
-
- if(recognition){
+ useEffect(()=>{
+if(recognition){
   const originalOnResult = recognition.onresult;
   recognition.onresult = (event) => {
     if (silenceTimer) clearTimeout(silenceTimer);
@@ -44,6 +36,18 @@ const resetSilenceTimer = () => {
    
   };
 }
+ },[])
+
+
+  const startListening = () =>{
+  
+    SpeechRecognition.startListening({
+      continuous: true,   // लगातार सुनता रहेगा
+      interimResults: true, // typing effect जैसा दिखेगा
+      language: "en-US",
+    });
+
+ 
 resetSilenceTimer()
   
   }
@@ -56,7 +60,7 @@ resetSilenceTimer()
 
       <button onClick={startListening}>Start???</button>
       <button onClick={SpeechRecognition.stopListening}>Stop</button>
-      <button onClick={resetTranscript}>Reset</button>
+      <button onClick={resetTranscript}>Resett</button>
 
       <div style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px" }}>
         <b>Transcript:</b>
