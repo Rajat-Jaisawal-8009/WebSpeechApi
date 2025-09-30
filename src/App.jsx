@@ -10,14 +10,14 @@ function App() {
   
     const recognition = SpeechRecognition.getRecognition();
 
-     const resetSilenceTimer = () => {
-    clearTimeout(silenceTimerRef.current);
-    silenceTimerRef.current = setTimeout(() => {
-      console.log("❌ 5 sec silence detected → stopListening()");
-      SpeechRecognition.stopListening();
-      setMessage("Mic बंद हो गया (5 sec silence)");
-    }, 5000); // 5 seconds
-  };
+  //    const resetSilenceTimer = () => {
+  //   clearTimeout(silenceTimerRef.current);
+  //   silenceTimerRef.current = setTimeout(() => {
+  //     console.log("❌ 5 sec silence detected → stopListening()");
+  //     SpeechRecognition.stopListening();
+  //     setMessage("Mic बंद हो गया (5 sec silence)");
+  //   }, 5000); // 5 seconds
+  // };
 
     if (recognition) {
       // जब भी speech result आए → timer reset
@@ -36,7 +36,7 @@ function App() {
       // // जब बोलना खत्म हो (speechend) detect हो
       recognition.onspeechend = () => {
         console.log("⏹ Speech ended, waiting for 5 sec silence...");
-        resetSilenceTimer();
+        // resetSilenceTimer();
       };
     }
 
@@ -46,7 +46,7 @@ function App() {
   const startListening = () => {
     SpeechRecognition.startListening({ continuous: true,interimResults: true, language: "en-IN" });
     setMessage("Listening शुरू...");
-    resetSilenceTimer();
+    // resetSilenceTimer();
   };
 
   return (
