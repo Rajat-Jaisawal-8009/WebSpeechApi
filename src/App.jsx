@@ -21,19 +21,19 @@ function App() {
 
     if (recognition) {
       // जब भी speech result आए → timer reset
-          const originalOnResult = recognition.onresult;
-      recognition.onresult = (event) => {
-        if (typeof originalOnResult === "function") {
-        originalOnResult(event);
-            setMessage("User बोल रहा है...");
+      //     const originalOnResult = recognition.onresult;
+      // recognition.onresult = (event) => {
+      //   if (typeof originalOnResult === "function") {
+      //   originalOnResult(event);
+      //       setMessage("User बोल रहा है...");
 
-        resetSilenceTimer();
-      }
+      //   resetSilenceTimer();
+      // }
 
     
-      };
+      // };
 
-      // जब बोलना खत्म हो (speechend) detect हो
+      // // जब बोलना खत्म हो (speechend) detect हो
       recognition.onspeechend = () => {
         console.log("⏹ Speech ended, waiting for 5 sec silence...");
         resetSilenceTimer();
@@ -54,7 +54,7 @@ function App() {
       <p>🎤 Listening: {listening ? "Yes" : "No"}</p>
       <p>Transcript: {transcript}</p>
       <p>Status: {message}</p>
-      <button onClick={startListening}>Start...</button>
+      <button onClick={startListening}>Sta</button>
       <button onClick={SpeechRecognition.stopListening}>Stop</button>
     </div>
   );
